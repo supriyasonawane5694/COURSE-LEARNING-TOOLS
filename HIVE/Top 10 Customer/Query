@@ -1,0 +1,4 @@
+G2. Top 10 Customers List
+------------------------
+select a.custno, b.firstname,b.lastname, b.age, b.profession, round(sum(a.amount),2) as amt from txnrecords a, customer b where a.custno=b.custno group by a.custno, b.firstname, b.lastname, b.age, b.profession order by amt desc limit 10;
+

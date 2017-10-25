@@ -1,0 +1,6 @@
+ Counting no of records
+-------------------------
+select count(*) from txnrecords;
+
+=> 50000
+

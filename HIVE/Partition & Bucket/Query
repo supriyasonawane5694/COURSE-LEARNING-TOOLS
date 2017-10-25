@@ -1,0 +1,77 @@
+H1. Create partitioned table (single bucket)
+---------------------------------------------
+create table txnrecsByCat(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+product STRING, city STRING, state STRING, spendby STRING)
+partitioned by (category STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+Dynamic partitioning
+--------------------
+
+H2. Create partitioned table (with multiple buckets)
+--------------------------------------------------
+create table txnrecsByCat2(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+product STRING, city STRING, state STRING, spendby STRING)
+partitioned by (category STRING)
+clustered by (state) into 10 buckets
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+H3. Create partitioned table (single bucket) on a derived column
+----------------------------------------------------------------
+create table txnrecsByCat3(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+category string, product STRING, city STRING, state STRING, spendby STRING)
+partitioned by (month string)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+H4. Create partitioned table (single bucket) on multiple columns
+----------------------------------------------------------------
+create table txnrecsByCat4(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+product STRING, city STRING, state STRING)
+partitioned by (category STRING, spendby string)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.dynamic.partition=true;
+
+set hive.enforce.bucketing=true;
+
+
+I1. Load data into partition table (single bucket)
+---------------------------------------------------
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat PARTITION(category) select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.spendby, txn.category DISTRIBUTE By category;
+
+I2. Load data into partition table (with multiple buckets)
+---------------------------------------------------
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat2 PARTITION(category) select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.spendby, txn.category DISTRIBUTE By category;
+
+I3. Load data into partition table (single bucket) using a derived partition column
+------------------------------------------------------------------------------------
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat3 PARTITION(month) select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.spendby, txn.category, substring(txn.txndate,1,2) as month DISTRIBUTE By substring(txndate,1,2);
+
+I4. Load data into partition table (single bucket) using multiple partition columns
+------------------------------------------------------------------------------------
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat4 PARTITION(category,spendby) select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.category, txn.spendby DISTRIBUTE By category, spendby;
+
+static partitioning
+-------------------
+create table txnrecsByCat5(txnno INT, txndate STRING, custno INT, amount DOUBLE,
+product STRING, city STRING, state STRING, spendby STRING)
+partitioned by (category STRING)
+row format delimited
+fields terminated by ','
+stored as textfile;
+
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat5 PARTITION(category='Gymnastics') select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.spendby where txn.category='Gymnastics';
+
+from txnrecords txn INSERT OVERWRITE TABLE txnrecsByCat5 PARTITION(category='Team Sports') select txn.txnno, txn.txndate,txn.custno, txn.amount,txn.product,txn.city,txn.state, txn.spendby where txn.category='Team Sports';
+
+
