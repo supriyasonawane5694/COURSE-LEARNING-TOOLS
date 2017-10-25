@@ -1,0 +1,133 @@
+Indexing
+Indexing creates a shortcut to read data for faster access.
+
+Two types of indexes. 
+1) compact
+2) Bitmap
+
+steps yo create indexes:
+Step 1: Create an empty indexer table
+Step 2: Load the table by mentioning which column will be used as index.From the table customer, profession is the column chosen for index. This will create a table with first column as the index comun. 
+step 3:Run query on this table to get results out faster. 
+
+Note:If customer table is not already present on hdfs, create it using custs.
+Lab start
+use retail;
+
+*** deferred rebuild will create an empty index
+create index prof_index on table customer(profession) as 'compact' with deferred rebuild;
+
+**** alter index will actually create the index
+alter index prof_index on customer rebuild;
+
+******list all the indexes on the table
+show indexes on customer;
+
+*****schema of the index
+describe retail__customer_prof_index__;
+
+select * from retail__customer_prof_index__ where profession = "Pilot;
+
+****Time taken without index
+-----------------------------
+select profession, count(*) from customer group by profession;
+
+list of all the profession and the count of customers
+
+Time taken: 45.003 seconds, Fetched: 51 row(s)
+
+
+****Time taken with index
+--------------------------
+select profession, SIZE(`_offsets`) from retail__customer_prof_index__;
+
+list of all the profession and the count of customers
+
+Time taken: 0.0604 seconds, Fetched: 51 row(s)
+Lab end
+
+
+Parameters
+The values to be used in the where/group by/order by clause of HQL queries, can be passed using a parameter as well. Access the variables usinf hiveconf
+Lab start
+hive> set myage=25;
+hive> select * from customer where age >= ${hiveconf:myage};
+
+To see all the available variables, from the command line, run
+
+$ hive -e 'set;'
+
+or from the hive prompt, run
+
+hive> set;
+
+Lab end
+To declare tablename as a variable, use hivevar. Its use is when we are running query in a batch file, and the tablename can be passed to the batch file as a command line argument.
+
+
+Lab start
+hive> set hivevar:tablename=customer;
+lab end
+
+Batch files
+Mutiple HQL commands can be executed from a batch file. The batch file has .sql file extension.
+To create a batch file, write HQL in an empty file, save as .sql
+
+Lab start
+
+pass on command line:
+
+$ hive -hiveconf myage=25 -f professioncount.sql
+
+nano professioncount.sql
+------------------------
+Step1: hive> set myage=25;
+Step 2: nano professioncount.sql
+Step 3: make the entry in the file as given below and save the profession.sql file
+use niit;
+select profession, count(profession) from retail.customer where age >= ${hiveconf:myage} group by profession order by profession;
+Step 4: pass on parameter as a command line:
+
+$ hive -hiveconf myage=25 -f professioncount.sql
+
+step 4:To see all the available variables, from the command line, run
+
+$ hive -e 'set;'
+
+or from the hive prompt, run
+
+hive> set;
+
+one can use hivevar variables as well, putting them into sql snippets or can be included from hive CLI using the source command (or pass as -i option from command line). The benefit here is that the variable can then be used with or without the hivevar prefix, and allow something akin to global vs local use.
+
+So, assume have some setup.sql which sets a tablename variable:
+
+set hivevar:tablename=customer;
+
+then, I can bring into hive:
+
+hive> source /home/hduser/customer.sql;
+
+customer.sql
+------------
+hive> select * from ${tablename};
+
+or
+
+hive> select * from ${hivevar:tablename};
+
+
+--Could also set a "local" tablename, which would affect the use of ${tablename}, but not ${hivevar:tablename}
+
+--hive> set tablename1=txnrecords;
+
+set hivevar:tablename=txnrecords;
+
+hive> select * from ${tablename1};
+
+vs
+
+hive> select * from ${hivevar:tablename};
+
+
+Lab end

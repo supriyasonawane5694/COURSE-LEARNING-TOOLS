@@ -1,0 +1,39 @@
+import java.util.Scanner;
+import java.io.*;
+import java
+class xyz
+{
+	public LoanException()
+	{
+		int salary;
+		Scanner sc=new Scanner(System.in);
+		try
+		{
+			System.out.println("enter salary");
+			salary=sc.NextInt();
+			if(salary<0)
+			{
+			throw INVALIDEXCEPTION("not eligible for loan");
+			}
+		}
+		catch( INVALIDEXCEPTION s)
+		{
+			System.out.println(s);
+		}
+	}
+}
+class  INVALIDEXCEPTION
+{
+	public  INVALIDEXCEPTION(String s)
+	{
+	super(s);
+	}
+}
+public class ABC
+{
+	public static void main(String [] aa)
+	{
+		xyz obj=new xyz();
+		 obj.LoanException();
+	}
+}

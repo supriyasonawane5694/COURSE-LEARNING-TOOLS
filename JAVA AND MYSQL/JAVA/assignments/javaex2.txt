@@ -1,0 +1,21 @@
+/*WAP to accept 5 no. and display the max no.*/
+
+import java.util.Scanner;
+class javaex2
+{
+	public static void main(String [] args)
+	{
+		int a,maximum;
+		Scanner sc=new Scanner(System.out.println);
+		int i=0;
+		while(i<5)
+		{
+			System.out.println("enter no");
+			a=sc,NextInt();
+			if(a>maximum)
+			{
+				maximum=a;
+			}
+		}i++
+	}System.out.println("maximum number is"+maximum);
+}
